@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+TARGET="/Library/Application Support/Adobe/CEP/extensions/com.podclip.panel"
+
+if [[ -e "$TARGET" ]]; then
+  rm -rf "$TARGET"
+fi

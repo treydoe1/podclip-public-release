@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Podclip</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <nav class="topbar">
+        <div class="nav-brand">Podclip <span>Open source</span></div>
+        <div class="nav-tools"><button id="toggleLog" type="button">Activity</button></div>
+      </nav>
+
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Podcast multicamera editing</p>
+          <h1>Build a speaker cut</h1>
+          <p class="subtitle">Route each voice to its camera angle. <span>v0.1.8</span></p>
+        </div>
+        <p class="subscription-note">No monthly subscription</p>
+      </header>
+
+      <section class="card setup-card">
+        <h2>Timeline recipe</h2>
+        <div class="setup-grid">
+          <label>
+            <span>Voice lanes</span>
+            <select id="speakerCount">
+              <option value="1">1 Voice</option>
+              <option value="2" selected>2 Voices</option>
+              <option value="3">3 Voices</option>
+              <option value="4">4 Voices</option>
+              <option value="5">5 Voices</option>
+              <option value="6">6 Voices</option>
+            </select>
+          </label>
+          <label>
+            <span>Video angles</span>
+            <select id="cameraCount">
+              <option value="1">1 Angle</option>
+              <option value="2" selected>2 Angles</option>
+              <option value="3">3 Angles</option>
+              <option value="4">4 Angles</option>
+              <option value="5">5 Angles</option>
+              <option value="6">6 Angles</option>
+              <option value="7">7 Angles</option>
+              <option value="8">8 Angles</option>
+              <option value="9">9 Angles</option>
+              <option value="10">10 Angles</option>
+            </select>
+          </label>
+          <label>
+            <span>Group-view use</span>
+            <select id="wideFreq">
+              <option value="off">Off</option>
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="card mapping-card">
+        <div class="section-head">
+          <h2>Voice-to-angle routing</h2>
+        </div>
+        <div class="mapping-layout">
+          <div class="mapping-block">
+            <div class="mapping-header"><span>Mic lane</span><span>Voice label</span></div>
+            <div id="speakerNameGrid"></div>
+          </div>
+          <div class="mapping-block">
+            <div class="mapping-header"><span>Video angle</span></div>
+            <div id="tagGrid"></div>
+          </div>
+        </div>
+      </section>
+
+      <details class="card advanced-card">
+        <summary>Cut behavior</summary>
+        <div class="advanced-body">
+          <label class="slider">
+            <span>Reaction delay</span>
+            <input type="range" id="delayCuts" min="0" max="1" step="0.01" value="0.1" />
+            <output id="delayCutsOut">0.10 s</output>
+          </label>
+          <label class="slider">
+            <span>Minimum shot length</span>
+            <input type="range" id="ignoreShort" min="0" max="3" step="0.05" value="0.35" />
+            <output id="ignoreShortOut">0.35 s</output>
+          </label>
+          <label class="slider">
+            <span>Speaker lead-in</span>
+            <input type="range" id="leadIn" min="0" max="0.5" step="0.01" value="0.12" />
+            <output id="leadInOut">0.12 s</output>
+          </label>
+          <label class="slider">
+            <span>Voice threshold</span>
+            <input type="range" id="dbThreshold" min="-70" max="-10" step="1" value="-50" />
+            <output id="dbThresholdOut">-50 dB</output>
+          </label>
+          <div class="threshold-head">
+            <span>Per-lane thresholds</span>
+            <button id="resetThresholds" type="button">Reset</button>
+          </div>
+          <div id="thresholdGrid"></div>
+        </div>
+      </details>
+
+      <section class="progress-card" id="progressPanel" aria-live="polite">
+        <div class="progress-meta">
+          <span id="progressLabel">Ready</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="progress-track"><div id="progressFill"></div></div>
+      </section>
+
+      <section class="action-grid">
+        <button id="checkSequence" class="action secondary-action">
+          <span><strong>Scan Timeline</strong><small>Check the track layout</small></span>
+        </button>
+        <button id="createEdit" class="action primary">
+          <span><strong>Build Speaker Cut</strong><small>Duplicate the sequence and assemble the edit</small></span>
+        </button>
+      </section>
+
+      <section class="card log-card is-hidden" id="logCard">
+        <div class="section-head">
+          <h2>Activity</h2>
+          <button id="clearLog" type="button">Clear</button>
+        </div>
+        <pre id="log"></pre>
+      </section>
+
+      <footer>
+        <span>Podclip v0.1.8 · Includes FFmpeg under LGPLv2.1+</span>
+      </footer>
+    </div>
+
+    <script src="./lib/CSInterface.js"></script>
+    <script src="./analyzer.js"></script>
+    <script src="./panel.js?v=0.1.8"></script>
+  </body>
+</html>
