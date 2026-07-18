@@ -21,6 +21,35 @@ using it in production.
 Podclip does not currently provide transcript-aware edits, a preview-before-write
 screen, saved presets, or Premiere multicam-source output.
 
+## Setup assumptions and failure behavior
+
+Podclip treats the timeline layout and voice-to-angle routing as its trust
+boundary. Each speaker must have a separate microphone lane, and each video
+angle must be tagged with every speaker it can show. Podclip makes deterministic
+routing decisions from audio levels and those tags; it does not use a transcript
+to infer who should be on screen.
+
+- If an expected audio or video lane is missing, Podclip stops before duplicating
+  or changing the sequence.
+- If two or more microphones cross their thresholds, Podclip treats a microphone
+  that is at least 6 dB louder than the others as the active speaker. Otherwise,
+  it treats the speakers as overlapping and selects an angle tagged for that
+  exact group, or the smallest tagged angle that includes all of them.
+- If no angle covers an overlapping group, Podclip falls back to the loudest
+  active speaker's single-speaker angle. If that mapping is also unavailable, it
+  holds the current shot.
+- When wide-shot selection is disabled, overlapping speech holds the current shot
+  rather than choosing between speakers.
+- Silence holds the current shot. Attack, release, cut-delay, and minimum-shot
+  timing prevent brief sounds or waveform gaps from causing immediate cuts.
+- If analysis produces only one camera state, Podclip stops without writing edits
+  and asks the user to check thresholds, microphone isolation, and track setup.
+
+For example, if A1 and A2 are equally active and V3 is tagged for both speakers,
+Podclip selects V3. If no angle is tagged for both, it uses the louder speaker's
+single-speaker angle when one is available; otherwise it keeps the previous
+angle.
+
 ## Compatibility
 
 | Component | Status |
