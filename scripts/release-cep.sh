@@ -46,6 +46,17 @@ cp -R "$ROOT_DIR/vendor" "$EXTENSION_DIR/"
 /usr/bin/xattr -cr "$EXTENSION_DIR" 2>/dev/null || true
 /usr/bin/find "$EXTENSION_DIR" \( -name ".DS_Store" -o -name "._*" \) -delete
 
+if [[ -n "${APP_SIGN_IDENTITY:-}" ]]; then
+  while IFS= read -r tool_path; do
+    /usr/bin/codesign \
+      --force \
+      --options runtime \
+      --timestamp \
+      --sign "$APP_SIGN_IDENTITY" \
+      "$tool_path"
+  done < <(/usr/bin/find "$EXTENSION_DIR/vendor/ffmpeg" -type f \( -name "ffmpeg" -o -name "ffprobe" \))
+fi
+
 rm -f "$ZIP_PATH" "$ZXP_PATH"
 (
   cd "$STAGE_ROOT"
@@ -101,5 +112,7 @@ if [[ -n "${ZXP_TIMESTAMP_URL:-}" ]]; then
 fi
 
 "${SIGN_ARGS[@]}"
+
+"$ZXPSIGNCMD" -verify "$ZXP_PATH"
 
 echo "Created signed ZXP: $ZXP_PATH"

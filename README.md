@@ -46,8 +46,8 @@ versions.
 Clone the repository and enter it:
 
 ```bash
-git clone https://github.com/treydoe1/podclip-public.git
-cd podclip-public
+git clone https://github.com/treydoe1/podclip-public-release.git
+cd podclip-public-release
 ```
 
 Allow Premiere to load an unsigned development extension. The exact CSXS version
@@ -118,15 +118,22 @@ Run the complete local check suite:
 The suite validates shell scripts, the CEP manifest, browser JavaScript,
 ExtendScript syntax compatibility, and deterministic cut-decision behavior.
 
-## Build an unsigned development package
+## Build a signed installer
 
 ```bash
+SIGN_ZXP=1 \
+ZXPSIGNCMD=/absolute/path/to/ZXPSignCmd \
+ZXP_CERT=/absolute/path/to/certificate.p12 \
+ZXP_CERT_PASSWORD='certificate-password' \
+APP_SIGN_IDENTITY='Developer ID Application: Your Name (TEAMID)' \
+INSTALLER_SIGN_IDENTITY='Developer ID Installer: Your Name (TEAMID)' \
 ./scripts/build-installer-pkg.sh
 ```
 
 Build output is written to `dist/`. The package includes the Podclip extension
-and both bundled FFmpeg architectures. External releases should be signed and
-notarized before distribution.
+and both bundled FFmpeg architectures. The build refuses to create an installer
+unless the CEP extension and its bundled executables are signed. External
+releases should also be notarized before distribution.
 
 ## Project layout
 

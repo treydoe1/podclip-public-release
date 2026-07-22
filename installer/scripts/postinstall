@@ -3,16 +3,6 @@
 set -euo pipefail
 
 TARGET="/Library/Application Support/Adobe/CEP/extensions/com.podclip.panel"
-CONSOLE_USER="$(/usr/sbin/scutil <<< "show State:/Users/ConsoleUser" | /usr/bin/awk '/Name :/ && $3 != "loginwindow" { print $3 }')"
-
-if [[ "${PODCLIP_ENABLE_PLAYER_DEBUG_MODE:-0}" == "1" ]]; then
-  for version in 9 10 11 12 13 14; do
-    /usr/bin/defaults write "com.adobe.CSXS.${version}" PlayerDebugMode 1 || true
-    if [[ -n "$CONSOLE_USER" ]]; then
-      /usr/bin/sudo -u "$CONSOLE_USER" /usr/bin/defaults write "com.adobe.CSXS.${version}" PlayerDebugMode 1 || true
-    fi
-  done
-fi
 
 /bin/chmod -R a+rX "$TARGET" 2>/dev/null || true
 /usr/bin/find "$TARGET/vendor/ffmpeg" -type f -name "ffmpeg" -exec /bin/chmod +x {} \; 2>/dev/null || true
