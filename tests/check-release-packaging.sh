@@ -36,6 +36,16 @@ for required in \
   fi
 done
 
+for required in \
+  'NFSHomeDirectory' \
+  '"$USER_EXTENSION_DIR/com.podclip.panel"' \
+  '"$USER_EXTENSION_DIR/Podclip"'; do
+  if ! grep -Fq "$required" installer/scripts/preinstall; then
+    echo "Installer does not remove a conflicting per-user Podclip copy: $required" >&2
+    exit 1
+  fi
+done
+
 if ! grep -Fq '"$ZXPSIGNCMD" -verify "$ZXP_PATH"' scripts/release-cep.sh; then
   echo "Signed CEP package is not verified after creation" >&2
   exit 1

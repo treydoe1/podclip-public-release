@@ -6,9 +6,16 @@ UPIA="/Library/Application Support/Adobe/Adobe Desktop Common/RemoteComponents/U
 LEGACY_TARGET="/Library/Application Support/Adobe/CEP/extensions/com.podclip.panel"
 MANAGED_TARGET="/Library/Application Support/Adobe/CEP/extensions/Podclip"
 CONSOLE_USER="$(/usr/bin/stat -f '%Su' /dev/console)"
+CONSOLE_HOME=""
 
 if [[ -x "$UPIA" && "$CONSOLE_USER" != "root" && "$CONSOLE_USER" != "loginwindow" ]]; then
   /usr/bin/sudo -H -u "$CONSOLE_USER" "$UPIA" --remove Podclip >/dev/null 2>&1 || true
+  CONSOLE_HOME="$(/usr/bin/dscl . -read "/Users/$CONSOLE_USER" NFSHomeDirectory 2>/dev/null | /usr/bin/cut -d ' ' -f 2-)"
 fi
 
 rm -rf "$LEGACY_TARGET" "$MANAGED_TARGET"
+
+if [[ -n "$CONSOLE_HOME" && "$CONSOLE_HOME" != "/" ]]; then
+  USER_EXTENSION_DIR="$CONSOLE_HOME/Library/Application Support/Adobe/CEP/extensions"
+  rm -rf "$USER_EXTENSION_DIR/com.podclip.panel" "$USER_EXTENSION_DIR/Podclip"
+fi
