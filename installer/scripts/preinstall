@@ -2,8 +2,13 @@
 
 set -euo pipefail
 
-TARGET="/Library/Application Support/Adobe/CEP/extensions/com.podclip.panel"
+UPIA="/Library/Application Support/Adobe/Adobe Desktop Common/RemoteComponents/UPI/UnifiedPluginInstallerAgent/UnifiedPluginInstallerAgent.app/Contents/MacOS/UnifiedPluginInstallerAgent"
+LEGACY_TARGET="/Library/Application Support/Adobe/CEP/extensions/com.podclip.panel"
+MANAGED_TARGET="/Library/Application Support/Adobe/CEP/extensions/Podclip"
+CONSOLE_USER="$(/usr/bin/stat -f '%Su' /dev/console)"
 
-if [[ -e "$TARGET" ]]; then
-  rm -rf "$TARGET"
+if [[ -x "$UPIA" && "$CONSOLE_USER" != "root" && "$CONSOLE_USER" != "loginwindow" ]]; then
+  /usr/bin/sudo -H -u "$CONSOLE_USER" "$UPIA" --remove Podclip >/dev/null 2>&1 || true
 fi
+
+rm -rf "$LEGACY_TARGET" "$MANAGED_TARGET"

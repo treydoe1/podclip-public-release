@@ -73,7 +73,8 @@ Restart Premiere, then open **Window → Extensions → Podclip**.
 
 Download the signed `.pkg` from the latest GitHub release, open it, and follow
 the macOS installer prompts. The installer includes Podclip, FFmpeg, and FFprobe;
-no Homebrew setup is required.
+no Homebrew setup is required. Adobe Creative Cloud Desktop must be installed
+because its plugin installer registers the signed extension with Premiere.
 
 ## Use
 
@@ -96,10 +97,13 @@ Quit Premiere and remove the development symlink:
 rm "$HOME/Library/Application Support/Adobe/CEP/extensions/com.podclip.panel"
 ```
 
-If Podclip was installed for all users with a package, remove that copy instead:
+If Podclip was installed with the package, remove it through Adobe's plugin
+installer, then remove the cached installer payload:
 
 ```bash
-sudo rm -rf "/Library/Application Support/Adobe/CEP/extensions/com.podclip.panel"
+UPIA="/Library/Application Support/Adobe/Adobe Desktop Common/RemoteComponents/UPI/UnifiedPluginInstallerAgent/UnifiedPluginInstallerAgent.app/Contents/MacOS/UnifiedPluginInstallerAgent"
+"$UPIA" --remove Podclip
+sudo rm -rf "/Library/Application Support/Podclip"
 ```
 
 If you no longer use any unsigned CEP extensions, you may also remove the
@@ -130,10 +134,11 @@ INSTALLER_SIGN_IDENTITY='Developer ID Installer: Your Name (TEAMID)' \
 ./scripts/build-installer-pkg.sh
 ```
 
-Build output is written to `dist/`. The package includes the Podclip extension
-and both bundled FFmpeg architectures. The build refuses to create an installer
-unless the CEP extension and its bundled executables are signed. External
-releases should also be notarized before distribution.
+Build output is written to `dist/`. The package includes the signed Podclip ZXP
+and both bundled FFmpeg architectures. During installation it hands that ZXP to
+Adobe Creative Cloud's Unified Plugin Installer Agent. The build refuses to
+create an installer unless the CEP extension and its bundled executables are
+signed. External releases should also be notarized before distribution.
 
 ## Project layout
 

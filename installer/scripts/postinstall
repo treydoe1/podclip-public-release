@@ -2,11 +2,23 @@
 
 set -euo pipefail
 
-TARGET="/Library/Application Support/Adobe/CEP/extensions/com.podclip.panel"
+UPIA="/Library/Application Support/Adobe/Adobe Desktop Common/RemoteComponents/UPI/UnifiedPluginInstallerAgent/UnifiedPluginInstallerAgent.app/Contents/MacOS/UnifiedPluginInstallerAgent"
+ZXP="/Library/Application Support/Podclip/Installer/Podclip.zxp"
+CONSOLE_USER="$(/usr/bin/stat -f '%Su' /dev/console)"
 
-/bin/chmod -R a+rX "$TARGET" 2>/dev/null || true
-/usr/bin/find "$TARGET/vendor/ffmpeg" -type f -name "ffmpeg" -exec /bin/chmod +x {} \; 2>/dev/null || true
-/usr/bin/find "$TARGET/vendor/ffmpeg" -type f -name "ffprobe" -exec /bin/chmod +x {} \; 2>/dev/null || true
-/usr/bin/xattr -dr com.apple.quarantine "$TARGET" 2>/dev/null || true
+if [[ ! -x "$UPIA" ]]; then
+  echo "Adobe Creative Cloud's plugin installer is required. Install or update Creative Cloud Desktop, then run this installer again." >&2
+  exit 1
+fi
 
-exit 0
+if [[ ! -f "$ZXP" ]]; then
+  echo "The signed Podclip extension package is missing from the installer payload." >&2
+  exit 1
+fi
+
+if [[ "$CONSOLE_USER" == "root" || "$CONSOLE_USER" == "loginwindow" ]]; then
+  echo "Podclip must be installed while a macOS user is logged in." >&2
+  exit 1
+fi
+
+/usr/bin/sudo -H -u "$CONSOLE_USER" "$UPIA" --install "$ZXP"

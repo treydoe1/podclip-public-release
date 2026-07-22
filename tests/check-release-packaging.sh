@@ -13,9 +13,25 @@ fi
 for required in \
   'Refusing to build a public installer with an unsigned CEP extension' \
   '"$ZXPSIGNCMD" -verify "$SIGNED_EXTENSION_DIR"' \
-  '/usr/bin/codesign --verify --strict'; do
+  '/usr/bin/codesign --verify --strict' \
+  'cp "$ZXP_PATH" "$PKG_ASSET_DIR/Podclip.zxp"'; do
   if ! grep -Fq "$required" scripts/build-installer-pkg.sh; then
     echo "Missing signed-installer safeguard: $required" >&2
+    exit 1
+  fi
+done
+
+
+if grep -Fq 'CEP/extensions/$BUNDLE_ID' scripts/build-installer-pkg.sh; then
+  echo "Public installer must not bypass Adobe's extension installer" >&2
+  exit 1
+fi
+
+for required in \
+  'UnifiedPluginInstallerAgent' \
+  '"$UPIA" --install "$ZXP"'; do
+  if ! grep -Fq "$required" installer/scripts/postinstall; then
+    echo "Installer does not hand the signed ZXP to Adobe UPIA: $required" >&2
     exit 1
   fi
 done
