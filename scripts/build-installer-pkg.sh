@@ -9,6 +9,7 @@ DIST_DIR="$ROOT_DIR/dist"
 PKG_STAGE_DIR="$DIST_DIR/pkgstage"
 PKG_ROOT="$PKG_STAGE_DIR/root"
 PKG_SCRIPTS_DIR="$ROOT_DIR/installer/scripts"
+PKG_ASSET_DIR="$PKG_ROOT/Library/Application Support/Podclip/Installer"
 
 extract_manifest_attr() {
   local attr="$1"
@@ -18,9 +19,20 @@ extract_manifest_attr() {
 BUNDLE_ID="$(extract_manifest_attr ExtensionBundleId)"
 VERSION="$(extract_manifest_attr ExtensionBundleVersion)"
 DISPLAY_NAME="$(extract_manifest_attr ExtensionBundleName)"
-EXTENSION_DIR="$DIST_DIR/${BUNDLE_ID}-${VERSION}/${BUNDLE_ID}"
+ZXP_PATH="$DIST_DIR/${BUNDLE_ID}-${VERSION}.zxp"
 PKG_PATH="$DIST_DIR/${DISPLAY_NAME:-Podclip}-Installer-${VERSION}.pkg"
 PKG_ID="${BUNDLE_ID}.installer"
+
+if [[ "${SIGN_ZXP:-0}" != "1" ]]; then
+  echo "Refusing to build a public installer with an unsigned CEP extension." >&2
+  echo "Set SIGN_ZXP=1 and provide ZXPSIGNCMD, ZXP_CERT, and ZXP_CERT_PASSWORD." >&2
+  exit 1
+fi
+
+if [[ -z "${APP_SIGN_IDENTITY:-}" ]]; then
+  echo "APP_SIGN_IDENTITY is required so bundled executables are signed before the CEP package." >&2
+  exit 1
+fi
 
 AVAILABLE_ARCHES=()
 BAD_RUNTIME_DEPS=()
@@ -66,24 +78,24 @@ fi
 "$ROOT_DIR/scripts/release-cep.sh"
 
 rm -rf "$PKG_STAGE_DIR"
-mkdir -p "$PKG_ROOT/Library/Application Support/Adobe/CEP/extensions"
-cp -R "$EXTENSION_DIR" "$PKG_ROOT/Library/Application Support/Adobe/CEP/extensions/$BUNDLE_ID"
+mkdir -p "$PKG_ASSET_DIR"
+if [[ ! -f "$ZXP_PATH" ]]; then
+  echo "Signed CEP package not found: $ZXP_PATH" >&2
+  exit 1
+fi
+
+SIGNED_EXTENSION_DIR="$PKG_STAGE_DIR/signed-extension"
+mkdir -p "$SIGNED_EXTENSION_DIR"
+/usr/bin/unzip -q "$ZXP_PATH" -d "$SIGNED_EXTENSION_DIR"
+"$ZXPSIGNCMD" -verify "$SIGNED_EXTENSION_DIR"
+
+for tool_path in "$SIGNED_EXTENSION_DIR"/vendor/ffmpeg/*/ffmpeg "$SIGNED_EXTENSION_DIR"/vendor/ffmpeg/*/ffprobe; do
+  /usr/bin/codesign --verify --strict "$tool_path"
+done
+
+cp "$ZXP_PATH" "$PKG_ASSET_DIR/Podclip.zxp"
 /usr/bin/xattr -cr "$PKG_ROOT" 2>/dev/null || true
 /usr/bin/find "$PKG_ROOT" \( -name ".DS_Store" -o -name "._*" \) -delete
-
-if [[ -n "${APP_SIGN_IDENTITY:-}" ]]; then
-  while IFS= read -r tool_path; do
-    /usr/bin/codesign \
-      --force \
-      --options runtime \
-      --timestamp \
-      --sign "$APP_SIGN_IDENTITY" \
-      "$tool_path"
-  done < <(/usr/bin/find "$PKG_ROOT/Library/Application Support/Adobe/CEP/extensions/$BUNDLE_ID/vendor/ffmpeg" -type f \( -name "ffmpeg" -o -name "ffprobe" \))
-elif [[ -n "${INSTALLER_SIGN_IDENTITY:-}" ]]; then
-  echo "APP_SIGN_IDENTITY is recommended when building a notarized installer with bundled executables." >&2
-  echo "Example: APP_SIGN_IDENTITY=\"Developer ID Application: Your Name (TEAMID)\"" >&2
-fi
 
 rm -f "$PKG_PATH"
 
