@@ -15,7 +15,7 @@
  */
 
 (function () {
-  var CONTROLLER_BUILD = "0.1.11";
+  var CONTROLLER_BUILD = "0.1.12";
   var cs = (typeof CSInterface !== "undefined") ? new CSInterface() : null;
   var inPremiere = cs && typeof window.__adobe_cep__ !== "undefined";
 
@@ -29,6 +29,7 @@
   var progressLabel = document.getElementById("progressLabel");
   var progressPct = document.getElementById("progressPct");
   var lastSequenceInfo = null;
+  var analyzerLoad = null;
   function log(msg, kind) {
     var span = document.createElement("span");
     if (kind) span.className = kind;
@@ -52,6 +53,32 @@
       progressPanel.className = "progress-card";
       if (kind === "err") setProgress(0, "Ready", false);
     }, 1400);
+  }
+
+  function loadAnalyzer() {
+    if (window.PodclipAnalyzer) return Promise.resolve(window.PodclipAnalyzer);
+    if (analyzerLoad) return analyzerLoad;
+    analyzerLoad = new Promise(function (resolve, reject) {
+      var script = document.createElement("script");
+      var timeout = window.setTimeout(function () {
+        reject(new Error("Audio analyzer did not load."));
+      }, 15000);
+      script.src = "./analyzer.js";
+      script.onload = function () {
+        window.clearTimeout(timeout);
+        if (window.PodclipAnalyzer) resolve(window.PodclipAnalyzer);
+        else reject(new Error("Audio analyzer initialized without its API."));
+      };
+      script.onerror = function () {
+        window.clearTimeout(timeout);
+        reject(new Error("Audio analyzer script could not load."));
+      };
+      document.body.appendChild(script);
+    }).catch(function (error) {
+      analyzerLoad = null;
+      throw error;
+    });
+    return analyzerLoad;
   }
 
   toggleLogBtn.addEventListener("click", function () {
@@ -90,49 +117,6 @@
   bindSliderOutput("ignoreShort", " s",  function (v) { return v.toFixed(2); });
   bindSliderOutput("leadIn",      " s",  function (v) { return v.toFixed(2); });
   bindSliderOutput("dbThreshold", " dB", function (v) { return v.toFixed(0); });
-
-  function enhanceSelect(id, labelMode) {
-    var select = document.getElementById(id);
-    var group = document.createElement("div");
-    group.className = "segmented-control segmented-" + id;
-    group.setAttribute("role", "group");
-
-    function buttonLabel(option) {
-      if (labelMode === "value") return option.value;
-      return option.text.replace(/\s+Speakers?|\s+Cameras?/g, "");
-    }
-
-    function sync() {
-      var buttons = group.querySelectorAll("button");
-      for (var i = 0; i < buttons.length; i++) {
-        buttons[i].className = buttons[i].dataset.value === select.value ? "active" : "";
-      }
-    }
-
-    for (var i = 0; i < select.options.length; i++) {
-      var option = select.options[i];
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.dataset.value = option.value;
-      btn.textContent = buttonLabel(option);
-      btn.addEventListener("click", function () {
-        select.value = this.dataset.value;
-        sync();
-        var event = document.createEvent("HTMLEvents");
-        event.initEvent("change", true, false);
-        select.dispatchEvent(event);
-      });
-      group.appendChild(btn);
-    }
-
-    select.className += " native-select";
-    select.parentNode.appendChild(group);
-    select.addEventListener("change", sync);
-    sync();
-  }
-  enhanceSelect("speakerCount", "value");
-  enhanceSelect("cameraCount", "value");
-  enhanceSelect("wideFreq", "text");
 
   // ---------- dynamic speaker names + Tag Speakers grid ----------
   function speakerLabel(index, names) {
@@ -676,14 +660,9 @@
     log("Starting speaker cut. Voice lanes=" + settings.speakerCount + " Video angles=" + settings.cameraCount, "info");
     setProgress(3, "Starting speaker cut...", true);
 
-    if (!window.PodclipAnalyzer) {
-      log("Analyzer not loaded.", "err");
-      finishProgress("Analyzer missing", "err");
-      btn.disabled = false;
-      return;
-    }
-
-    window.PodclipAnalyzer.checkFfmpeg().then(function (chk) {
+    loadAnalyzer().then(function (analyzer) {
+      return analyzer.checkFfmpeg();
+    }).then(function (chk) {
       setProgress(8, "Checking ffmpeg...", true);
       if (!chk.ok) {
         if (chk.tried && chk.tried.length) log("ffmpeg lookup tried: " + chk.tried.join(" | "), "warn");

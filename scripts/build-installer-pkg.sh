@@ -34,6 +34,11 @@ if [[ -z "${APP_SIGN_IDENTITY:-}" ]]; then
   exit 1
 fi
 
+if [[ -z "${INSTALLER_SIGN_IDENTITY:-}" ]]; then
+  echo "INSTALLER_SIGN_IDENTITY is required for a public installer." >&2
+  exit 1
+fi
+
 AVAILABLE_ARCHES=()
 BAD_RUNTIME_DEPS=()
 BAD_LICENSE_FLAGS=()
@@ -107,9 +112,7 @@ PKGBUILD_ARGS=(
   --install-location "/"
 )
 
-if [[ -n "${INSTALLER_SIGN_IDENTITY:-}" ]]; then
-  PKGBUILD_ARGS+=(--sign "$INSTALLER_SIGN_IDENTITY")
-fi
+PKGBUILD_ARGS+=(--sign "$INSTALLER_SIGN_IDENTITY")
 
 PKGBUILD_ARGS+=("$PKG_PATH")
 
@@ -117,6 +120,3 @@ PKGBUILD_ARGS+=("$PKG_PATH")
 
 echo "Created installer package: $PKG_PATH"
 echo "Bundled ffmpeg runtimes: ${AVAILABLE_ARCHES[*]}"
-if [[ -z "${INSTALLER_SIGN_IDENTITY:-}" ]]; then
-  echo "Package is unsigned. For external distribution, rebuild with INSTALLER_SIGN_IDENTITY=\"Developer ID Installer: ...\""
-fi

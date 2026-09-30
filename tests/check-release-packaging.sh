@@ -14,6 +14,8 @@ for required in \
   'Refusing to build a public installer with an unsigned CEP extension' \
   '"$ZXPSIGNCMD" -verify "$SIGNED_EXTENSION_DIR"' \
   '/usr/bin/codesign --verify --strict' \
+  'INSTALLER_SIGN_IDENTITY is required for a public installer' \
+  'PKGBUILD_ARGS+=(--sign "$INSTALLER_SIGN_IDENTITY")' \
   'cp "$ZXP_PATH" "$PKG_ASSET_DIR/Podclip.zxp"'; do
   if ! grep -Fq "$required" scripts/build-installer-pkg.sh; then
     echo "Missing signed-installer safeguard: $required" >&2

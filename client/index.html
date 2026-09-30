@@ -8,50 +8,45 @@
   <body>
     <div class="app-shell">
       <nav class="topbar">
-        <div class="nav-brand">Podclip <span>Open source</span></div>
+        <div class="nav-brand">Podclip</div>
         <div class="nav-tools"><button id="toggleLog" type="button">Activity</button></div>
       </nav>
 
       <header class="hero">
-        <div>
-          <p class="eyebrow">Podcast multicamera editing</p>
-          <h1>Build a speaker cut</h1>
-          <p class="subtitle">Route each voice to its camera angle. <span>v0.1.11</span></p>
-        </div>
-        <p class="subscription-note">No monthly subscription</p>
+        <h1>Speaker cut</h1>
       </header>
 
       <section class="card setup-card">
-        <h2>Timeline recipe</h2>
+        <h2>Setup</h2>
         <div class="setup-grid">
           <label>
             <span>Voice lanes</span>
             <select id="speakerCount">
-              <option value="1">1 Voice</option>
-              <option value="2" selected>2 Voices</option>
-              <option value="3">3 Voices</option>
-              <option value="4">4 Voices</option>
-              <option value="5">5 Voices</option>
-              <option value="6">6 Voices</option>
+              <option value="1">1</option>
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
             </select>
           </label>
           <label>
             <span>Video angles</span>
             <select id="cameraCount">
-              <option value="1">1 Angle</option>
-              <option value="2" selected>2 Angles</option>
-              <option value="3">3 Angles</option>
-              <option value="4">4 Angles</option>
-              <option value="5">5 Angles</option>
-              <option value="6">6 Angles</option>
-              <option value="7">7 Angles</option>
-              <option value="8">8 Angles</option>
-              <option value="9">9 Angles</option>
-              <option value="10">10 Angles</option>
+              <option value="1">1</option>
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
             </select>
           </label>
           <label>
-            <span>Group-view use</span>
+            <span>Group shots</span>
             <select id="wideFreq">
               <option value="off">Off</option>
               <option value="low">Low</option>
@@ -64,22 +59,22 @@
 
       <section class="card mapping-card">
         <div class="section-head">
-          <h2>Voice-to-angle routing</h2>
+          <h2>Routing</h2>
         </div>
         <div class="mapping-layout">
           <div class="mapping-block">
-            <div class="mapping-header"><span>Mic lane</span><span>Voice label</span></div>
+            <div class="mapping-header"><span>Audio</span><span>Speaker</span></div>
             <div id="speakerNameGrid"></div>
           </div>
           <div class="mapping-block">
-            <div class="mapping-header"><span>Video angle</span></div>
+            <div class="mapping-header"><span>Video</span><span>Speakers shown</span></div>
             <div id="tagGrid"></div>
           </div>
         </div>
       </section>
 
       <details class="card advanced-card">
-        <summary>Cut behavior</summary>
+        <summary>Cut settings</summary>
         <div class="advanced-body">
           <label class="slider">
             <span>Reaction delay</span>
@@ -118,12 +113,8 @@
       </section>
 
       <section class="action-grid">
-        <button id="checkSequence" class="action secondary-action">
-          <span><strong>Scan Timeline</strong><small>Check the track layout</small></span>
-        </button>
-        <button id="createEdit" class="action primary">
-          <span><strong>Build Speaker Cut</strong><small>Duplicate the sequence and assemble the edit</small></span>
-        </button>
+        <button id="checkSequence" class="action secondary-action">Scan Timeline</button>
+        <button id="createEdit" class="action primary">Build Speaker Cut</button>
       </section>
 
       <section class="card log-card is-hidden" id="logCard">
@@ -135,12 +126,11 @@
       </section>
 
       <footer>
-        <span>Podclip v0.1.11 · Includes FFmpeg under LGPLv2.1+</span>
+        <span>Podclip v0.1.12 · FFmpeg LGPLv2.1+</span>
       </footer>
     </div>
 
     <script src="./lib/CSInterface.js"></script>
-    <script src="./analyzer.js"></script>
-    <script src="./panel.js?v=0.1.11"></script>
+    <script src="./panel.js?v=0.1.12"></script>
   </body>
 </html>

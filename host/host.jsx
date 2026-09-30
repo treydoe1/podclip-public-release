@@ -142,6 +142,18 @@ var Podclip = (function () {
     if (typeof seq.clone !== "function") {
       return JSON.stringify({ ok: false, error: "This Premiere version does not expose sequence.clone()." });
     }
+    // Check the undocumented razor bridge before making a duplicate. A future
+    // Premiere release may keep CEP working while removing the QE interface.
+    try {
+      app.enableQE();
+      var qeSeq = qe.project.getActiveSequence();
+      var qeTrack = qeSeq && qeSeq.getVideoTrackAt(0);
+      if (!qeTrack || typeof qeTrack.razor !== "function") {
+        return JSON.stringify({ ok: false, error: "This Premiere version does not expose QE video-track razor. No sequence was duplicated." });
+      }
+    } catch (compatibilityError) {
+      return JSON.stringify({ ok: false, error: "Premiere QE razor is unavailable. No sequence was duplicated: " + compatibilityError.toString() });
+    }
 
     try {
       seq.clone();
@@ -240,15 +252,22 @@ var Podclip = (function () {
     var toggleCount = 0;
     var i, j, t, trackPlan, vTrack, boundaries, boundary, segments, seg;
 
-    app.enableQE();
-    var qeSeq = qe.project.getActiveSequence();
+    try {
+      app.enableQE();
+      var qeSeq = qe.project.getActiveSequence();
+      if (!qeSeq) return JSON.stringify({ ok: false, error: "Premiere QE timeline is unavailable." });
+    } catch (qeError) {
+      return JSON.stringify({ ok: false, error: "Premiere QE timeline is unavailable: " + qeError.toString() });
+    }
 
     for (i = 0; i < payload.tracks.length; i++) {
       trackPlan = payload.tracks[i];
       vTrack = seq.videoTracks[trackPlan.videoTrackIndex];
       if (!vTrack) continue;
       var qeTrack = qeSeq.getVideoTrackAt(trackPlan.videoTrackIndex);
-      if (!qeTrack) continue;
+      if (!qeTrack || typeof qeTrack.razor !== "function") {
+        return JSON.stringify({ ok: false, error: "Premiere QE razor is unavailable for V" + (trackPlan.videoTrackIndex + 1) + "." });
+      }
 
       // 1. Collect razor boundaries (every segment edge).
       boundaries = [];

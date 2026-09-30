@@ -12,6 +12,7 @@ node --check client/lib/CSInterface.js
 node --check client/panel.js
 node tests/check-host-syntax.js
 node --test tests/cut-decisions.test.js
+node --test tests/host-compat.test.js
 tests/check-bundled-ffmpeg.sh
 tests/check-release-packaging.sh
 tests/check-branding.sh

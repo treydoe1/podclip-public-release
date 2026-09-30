@@ -54,14 +54,28 @@ angle.
 
 | Component | Status |
 | --- | --- |
-| Adobe Premiere Pro | Manifest supports 2022 and newer; tested with Premiere Pro 2026 |
+| Adobe Premiere Pro | Manifest permits 2022 and newer; signed panel launch tested on 26.3. Full editing compatibility with 26.5.1 has not been verified. |
 | macOS | Tested on macOS 26.4 on Apple silicon |
 | Intel Macs | Bundled Intel runtime verified under Rosetta; native Premiere test pending |
 | Windows | Not supported |
 
-Podclip uses Adobe's legacy CEP extension platform and Premiere's QE DOM for
-razor operations. Adobe may change or remove these interfaces in future Premiere
-versions.
+Podclip uses Adobe's legacy CEP extension platform and Premiere's undocumented QE
+DOM for razor operations. It checks for the QE razor before duplicating a
+sequence, but a successful check does not prove that edits will behave correctly
+in every Premiere release. Test the complete scan, duplicate, and cut flow on a
+disposable project before claiming support for a new version.
+
+A local 0.1.12 installer was signed, notarized, and installed on macOS 26.4.
+The panel loaded in Premiere Pro 26.3 with CEP `PlayerDebugMode` disabled. No
+release artifact has been published. Before publishing, test Scan Timeline and
+Build Speaker Cut on a disposable project and verify installation on a clean
+macOS user account in each Premiere version claimed as supported.
+
+Adobe lists 26.5.1 as the current stable Premiere release as of September 2026.
+Adobe's [CEP transition schedule](https://blog.developer.adobe.com/en/publish/2026/09/investing-in-the-future-of-creative-cloud-extensibility-uxp-comes-to-our-flagship-applications)
+sets December 2028 for CEP to be disabled by default in Premiere. A move to UXP
+will be needed for long-term compatibility; it is a separate migration because
+UXP does not provide a direct replacement for this panel's Node and QE usage.
 
 ## Requirements
 
@@ -88,6 +102,12 @@ for version in 11 12 13 14; do
   defaults write "com.adobe.CSXS.${version}" PlayerDebugMode 1
 done
 ```
+
+Premiere 26.3 uses CSXS 12. If Podclip appears in the Extensions menu but opens
+blank, check `~/Library/Logs/CSXS/CEP12-PPRO.log` for `invalidSignature` and
+verify `defaults read com.adobe.CSXS.12 PlayerDebugMode` returns `1`. Restart
+Premiere after changing that setting. It allows unsigned CEP extensions for this
+user, so leave it enabled only while testing development builds.
 
 Link the checkout into the per-user CEP extensions folder:
 
