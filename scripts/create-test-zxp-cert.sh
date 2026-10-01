@@ -54,4 +54,4 @@ echo "  Subject: C=$CERT_COUNTRY, ST=$CERT_STATE, O=$CERT_ORG, CN=$CERT_NAME"
 echo "Created certificate: $CERT_OUTPUT"
 echo
 echo "Next step:"
-echo "  SIGN_ZXP=1 ZXPSIGNCMD=\"$ZXPSIGNCMD\" ZXP_CERT=\"$CERT_OUTPUT\" ZXP_CERT_PASSWORD=\"$CERT_PASSWORD\" \"$ROOT_DIR/scripts/release-cep.sh\""
+echo "  SIGN_ZXP=1 ZXPSIGNCMD=\"$ZXPSIGNCMD\" ZXP_CERT=\"$CERT_OUTPUT\" ZXP_CERT_PASSWORD='<your password>' \"$ROOT_DIR/scripts/release-cep.sh\""
