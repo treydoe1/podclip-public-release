@@ -16,27 +16,24 @@ for required in \
   '/usr/bin/codesign --verify --strict' \
   'INSTALLER_SIGN_IDENTITY is required for a public installer' \
   'PKGBUILD_ARGS+=(--sign "$INSTALLER_SIGN_IDENTITY")' \
-  'cp "$ZXP_PATH" "$PKG_ASSET_DIR/Podclip.zxp"'; do
+  'cp -R "$SIGNED_EXTENSION_DIR" "$PKG_EXTENSIONS_DIR/$BUNDLE_ID"'; do
   if ! grep -Fq "$required" scripts/build-installer-pkg.sh; then
     echo "Missing signed-installer safeguard: $required" >&2
     exit 1
   fi
 done
 
-
-if grep -Fq 'CEP/extensions/$BUNDLE_ID' scripts/build-installer-pkg.sh; then
-  echo "Public installer must not bypass Adobe's extension installer" >&2
+# Creative Cloud's plugin installer can fail silently or hang, and its
+# --remove matches by display name, which also removes the Podclip UXP plugin.
+if grep -Fq 'UnifiedPluginInstallerAgent' installer/scripts/preinstall installer/scripts/postinstall; then
+  echo "Installer must not depend on Adobe UPIA" >&2
   exit 1
 fi
 
-for required in \
-  'UnifiedPluginInstallerAgent' \
-  '"$UPIA" --install "$ZXP"'; do
-  if ! grep -Fq "$required" installer/scripts/postinstall; then
-    echo "Installer does not hand the signed ZXP to Adobe UPIA: $required" >&2
-    exit 1
-  fi
-done
+if ! grep -Fq 'META-INF/signatures.xml' installer/scripts/postinstall; then
+  echo "Installer does not confirm the signed extension was installed" >&2
+  exit 1
+fi
 
 for required in \
   'NFSHomeDirectory' \

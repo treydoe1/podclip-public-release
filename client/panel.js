@@ -15,7 +15,7 @@
  */
 
 (function () {
-  var CONTROLLER_BUILD = "0.1.12";
+  var CONTROLLER_BUILD = "0.1.13";
   var cs = (typeof CSInterface !== "undefined") ? new CSInterface() : null;
   var inPremiere = cs && typeof window.__adobe_cep__ !== "undefined";
 

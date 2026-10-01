@@ -65,11 +65,11 @@ sequence, but a successful check does not prove that edits will behave correctly
 in every Premiere release. Test the complete scan, duplicate, and cut flow on a
 disposable project before claiming support for a new version.
 
-A local 0.1.12 installer was signed, notarized, and installed on macOS 26.4.
-The panel loaded in Premiere Pro 26.3 with CEP `PlayerDebugMode` disabled. No
-release artifact has been published. Before publishing, test Scan Timeline and
-Build Speaker Cut on a disposable project and verify installation on a clean
-macOS user account in each Premiere version claimed as supported.
+The signed extension, copied into place the way the 0.1.13 installer does it,
+loaded in Premiere Pro 26.5.2 on macOS 26.6.2 with CEP `PlayerDebugMode`
+disabled. Before each release, test Scan Timeline and Build Speaker Cut on a
+disposable project and verify installation on a clean macOS user account in
+each Premiere version claimed as supported.
 
 Adobe lists 26.5.1 as the current stable Premiere release as of September 2026.
 Adobe's [CEP transition schedule](https://blog.developer.adobe.com/en/publish/2026/09/investing-in-the-future-of-creative-cloud-extensibility-uxp-comes-to-our-flagship-applications)
@@ -122,8 +122,8 @@ Restart Premiere, then open **Window → Extensions → Podclip**.
 
 Download the signed `.pkg` from the latest GitHub release, open it, and follow
 the macOS installer prompts. The installer includes Podclip, FFmpeg, and FFprobe;
-no Homebrew setup is required. Adobe Creative Cloud Desktop must be installed
-because its plugin installer registers the signed extension with Premiere.
+no Homebrew setup is required. The extension is signed, so Premiere loads it
+without CEP `PlayerDebugMode` or any other developer setting.
 
 ## Use
 
@@ -146,13 +146,10 @@ Quit Premiere and remove the development symlink:
 rm "$HOME/Library/Application Support/Adobe/CEP/extensions/com.podclip.panel"
 ```
 
-If Podclip was installed with the package, remove it through Adobe's plugin
-installer, then remove the cached installer payload:
+If Podclip was installed with the package, quit Premiere and remove that copy:
 
 ```bash
-UPIA="/Library/Application Support/Adobe/Adobe Desktop Common/RemoteComponents/UPI/UnifiedPluginInstallerAgent/UnifiedPluginInstallerAgent.app/Contents/MacOS/UnifiedPluginInstallerAgent"
-"$UPIA" --remove Podclip
-sudo rm -rf "/Library/Application Support/Podclip"
+sudo rm -rf "/Library/Application Support/Adobe/CEP/extensions/com.podclip.panel"
 ```
 
 If you no longer use any unsigned CEP extensions, you may also remove the
@@ -183,10 +180,10 @@ INSTALLER_SIGN_IDENTITY='Developer ID Installer: Your Name (TEAMID)' \
 ./scripts/build-installer-pkg.sh
 ```
 
-Build output is written to `dist/`. The package includes the signed Podclip ZXP
-and both bundled FFmpeg architectures. During installation it hands that ZXP to
-Adobe Creative Cloud's Unified Plugin Installer Agent. The build refuses to
-create an installer unless the CEP extension and its bundled executables are
+Build output is written to `dist/`. The package installs the signed Podclip
+extension, including both bundled FFmpeg architectures, into
+`/Library/Application Support/Adobe/CEP/extensions/com.podclip.panel` with its
+signature intact. The build refuses to create an installer unless the CEP extension and its bundled executables are
 signed. External releases should also be notarized before distribution.
 
 ## Project layout

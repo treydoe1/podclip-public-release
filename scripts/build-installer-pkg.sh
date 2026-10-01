@@ -9,7 +9,7 @@ DIST_DIR="$ROOT_DIR/dist"
 PKG_STAGE_DIR="$DIST_DIR/pkgstage"
 PKG_ROOT="$PKG_STAGE_DIR/root"
 PKG_SCRIPTS_DIR="$ROOT_DIR/installer/scripts"
-PKG_ASSET_DIR="$PKG_ROOT/Library/Application Support/Podclip/Installer"
+PKG_EXTENSIONS_DIR="$PKG_ROOT/Library/Application Support/Adobe/CEP/extensions"
 
 extract_manifest_attr() {
   local attr="$1"
@@ -83,7 +83,7 @@ fi
 "$ROOT_DIR/scripts/release-cep.sh"
 
 rm -rf "$PKG_STAGE_DIR"
-mkdir -p "$PKG_ASSET_DIR"
+mkdir -p "$PKG_EXTENSIONS_DIR"
 if [[ ! -f "$ZXP_PATH" ]]; then
   echo "Signed CEP package not found: $ZXP_PATH" >&2
   exit 1
@@ -98,7 +98,9 @@ for tool_path in "$SIGNED_EXTENSION_DIR"/vendor/ffmpeg/*/ffmpeg "$SIGNED_EXTENSI
   /usr/bin/codesign --verify --strict "$tool_path"
 done
 
-cp "$ZXP_PATH" "$PKG_ASSET_DIR/Podclip.zxp"
+# Install the signed extension folder directly. CEP verifies META-INF/signatures.xml
+# at launch, so users do not need PlayerDebugMode or Creative Cloud's plugin installer.
+cp -R "$SIGNED_EXTENSION_DIR" "$PKG_EXTENSIONS_DIR/$BUNDLE_ID"
 /usr/bin/xattr -cr "$PKG_ROOT" 2>/dev/null || true
 /usr/bin/find "$PKG_ROOT" \( -name ".DS_Store" -o -name "._*" \) -delete
 
